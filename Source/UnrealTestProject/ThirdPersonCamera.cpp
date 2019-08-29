@@ -33,13 +33,21 @@ void AThirdPersonCamera::BeginPlay()
 void AThirdPersonCamera::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
+	
 	currentRotation.Add( -mouseY * MouseSensitivity.Y, mouseX * MouseSensitivity.X, 0);
 	currentRotation.Pitch = FMath::Clamp(currentRotation.Pitch, AngleBoundaries.X, AngleBoundaries.Y);
 	const FVector direction = currentRotation.Vector();
 	const FVector orbitPosition = GetParentActor()->GetActorLocation();
-	const FVector cameraPosition = orbitPosition + direction * CameraDistance;
+	FVector cameraPosition = orbitPosition + direction * CameraDistance;
 	SetActorRotation((orbitPosition - cameraPosition).Rotation());
 	const FVector cameraOffset = GetActorRightVector() * CameraOffset.X + GetParentActor()->GetActorUpVector() * CameraOffset.Y;
-	SetActorLocation(cameraPosition + cameraOffset);
+	cameraPosition += cameraOffset;
+	
+	FHitResult hitResult;
+	if (GetWorld()->LineTraceSingleByChannel(hitResult, orbitPosition + FVector(0, 0, CameraOffset.Y), cameraPosition, ECC_Camera))
+	{
+		cameraPosition = hitResult.ImpactPoint + hitResult.ImpactNormal * 10;
+	}
+
+	SetActorLocation(FMath::Lerp(GetActorLocation(), cameraPosition, DeltaSeconds * 100));
 }
