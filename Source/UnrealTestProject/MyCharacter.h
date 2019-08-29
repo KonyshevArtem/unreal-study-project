@@ -21,6 +21,13 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "My Character properties")
+		UAnimMontage* OpenDoorAnimMontage;
+
+	UFUNCTION(BlueprintCallable, Category = "My Character method")
+		void OpenDoor();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

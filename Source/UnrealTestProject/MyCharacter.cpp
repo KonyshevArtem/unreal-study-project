@@ -18,6 +18,17 @@ void AMyCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
+void AMyCharacter::OpenDoor()
+{
+	if (!OpenDoorAnimMontage)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No open door anim montage set"))
+			GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, "[Error] No open door anim montage set");
+		return;
+	}
+	PlayAnimMontage(OpenDoorAnimMontage);
+}
+
 // Called every frame
 void AMyCharacter::Tick(float DeltaTime)
 {

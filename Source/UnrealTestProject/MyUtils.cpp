@@ -27,19 +27,16 @@ UTimelineComponent* MyUtils::CreateTimeline(AActor* owner, FName name, TArray<UT
 
 	for (UTimelineCurveBase* curveInfo : curves)
 	{
-		if (Cast<UTimelineCurveFloat>(curveInfo) != nullptr)
+		if (UTimelineCurveFloat* floatCurveInfo = Cast<UTimelineCurveFloat>(curveInfo))
 		{
-			UTimelineCurveFloat* floatCurveInfo = Cast<UTimelineCurveFloat>(curveInfo);
 			timeline->AddInterpFloat(floatCurveInfo->CurveFloat, floatCurveInfo->CurveCallback);
 		}
-		else if (Cast<UTimelineCurveVector>(curveInfo) != nullptr)
+		else if (UTimelineCurveVector* vectorCurveInfo = Cast<UTimelineCurveVector>(curveInfo))
 		{
-			UTimelineCurveVector* vectorCurveInfo = Cast<UTimelineCurveVector>(curveInfo);
 			timeline->AddInterpVector(vectorCurveInfo->CurveVector, vectorCurveInfo->CurveCallback);
 		}
-		else if (Cast<UTimelineCurveLinearColor>(curveInfo) != nullptr)
+		else if (UTimelineCurveLinearColor* linearColorCurveInfo = Cast<UTimelineCurveLinearColor>(curveInfo))
 		{
-			UTimelineCurveLinearColor* linearColorCurveInfo = Cast<UTimelineCurveLinearColor>(curveInfo);
 			timeline->AddInterpLinearColor(linearColorCurveInfo->CurveLinearColor, linearColorCurveInfo->CurveCallback);
 		}
 	}

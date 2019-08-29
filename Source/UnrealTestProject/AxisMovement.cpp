@@ -42,6 +42,7 @@ void UAxisMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	RotateActorToVelocity(DeltaTime);
 }
 
+
 void UAxisMovement::RotateActorToVelocity(float DeltaTime) const
 {
 	const FVector cameraForward = mainCamera->GetActorForwardVector();
