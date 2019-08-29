@@ -26,6 +26,10 @@ private:
 
 	UPROPERTY()
 		FRotator currentRotation;
+	UPROPERTY()
+		FVector currentCollisionOffset;
+	UPROPERTY()
+		FVector targetCollisionOffset;
 
 	void SetMouseX(float value) { mouseX = value; }
 	void SetMouseY(float value) { mouseY = value; }
