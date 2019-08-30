@@ -4,6 +4,7 @@
 #include "MyCharacter.h"
 #include "Engine.h"
 #include "MyUtils.h"
+#include "AxisMovement.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -39,6 +40,10 @@ void AMyCharacter::Tick(float DeltaTime)
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (UAxisMovement * axisMovement = Cast<UAxisMovement>(GetComponentByClass(UAxisMovement::StaticClass())))
+	{
+		axisMovement->InitializeInput(PlayerInputComponent);
+	}
 }
 
 

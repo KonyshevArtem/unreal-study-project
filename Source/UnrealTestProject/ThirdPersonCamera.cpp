@@ -23,14 +23,17 @@ void AThirdPersonCamera::BeginPlay()
 		return;
 	}
 	SetTarget(parent);
-	if (!parent->InputComponent)
+
+	APlayerController* playerController = GetWorld()->GetFirstPlayerController();
+	if (playerController)
 	{
-		MyUtils::LogError("No input component on ThirdPersonCamera parent");
-		return;
+		playerController->InputComponent->BindAxis("MouseX", this, &AThirdPersonCamera::SetMouseX);
+		playerController->InputComponent->BindAxis("MouseY", this, &AThirdPersonCamera::SetMouseY);
 	}
-	
-	parent->InputComponent->BindAxis("MouseX", this, &AThirdPersonCamera::SetMouseX);
-	parent->InputComponent->BindAxis("MouseY", this, &AThirdPersonCamera::SetMouseY);
+	else
+	{
+		MyUtils::LogError("First player controller not found");
+	}
 	currentRotation = GetActorRotation();
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 }

@@ -8,7 +8,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "MyUtils.h"
-#include "GameFramework/PlayerController.h"
 
 // Sets default values for this component's properties
 UAxisMovement::UAxisMovement()
@@ -39,9 +38,7 @@ void UAxisMovement::BeginPlay()
 		MyUtils::LogError("No input component on owner of Axis Movement component");
 		return;
 	}
-	inputComponent->BindAxis("Vertical", this, &UAxisMovement::SetVertical);
-	inputComponent->BindAxis("Horizontal", this, &UAxisMovement::SetHorizontal);
-	inputComponent->BindAction("Jump", IE_Pressed, this, &UAxisMovement::Jump);
+	InitializeInput(inputComponent);
 }
 
 
@@ -50,6 +47,13 @@ void UAxisMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	RotateActorToVelocity(DeltaTime);
+}
+
+void UAxisMovement::InitializeInput(UInputComponent* inputComponent)
+{
+	inputComponent->BindAxis("Vertical", this, &UAxisMovement::SetVertical);
+	inputComponent->BindAxis("Horizontal", this, &UAxisMovement::SetHorizontal);
+	inputComponent->BindAction("Jump", IE_Pressed, this, &UAxisMovement::Jump);
 }
 
 
