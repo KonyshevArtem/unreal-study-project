@@ -3,6 +3,7 @@
 
 #include "MyCharacter.h"
 #include "Engine.h"
+#include "MyUtils.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -22,8 +23,7 @@ void AMyCharacter::OpenDoor()
 {
 	if (!OpenDoorAnimMontage)
 	{
-		UE_LOG(LogTemp, Error, TEXT("No open door anim montage set"))
-			GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, "[Error] No open door anim montage set");
+		MyUtils::LogError("No open door anim montage set");
 		return;
 	}
 	PlayAnimMontage(OpenDoorAnimMontage);

@@ -16,4 +16,5 @@ public:
 	~MyUtils();
 
 	static UTimelineComponent* CreateTimeline(AActor* owner, FName name, TArray<UTimelineCurveBase*> curves);
+	static void LogError(FString message);
 };

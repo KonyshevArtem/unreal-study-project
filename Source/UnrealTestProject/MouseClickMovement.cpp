@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Engine.h"
 #include "AIController.h"
+#include "MyUtils.h"
 
 // Sets default values for this component's properties
 UMouseClickMovement::UMouseClickMovement()
@@ -28,10 +29,9 @@ void UMouseClickMovement::BeginPlay()
 	AIController = Cast<AAIController>(ownerCharacter->GetController());
 	if (!AIController)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString("[Error] No AIController on owner character"));
-		UE_LOG(LogTemp, Error, TEXT("No AIController on owner character"));
+		MyUtils::LogError("No AIController on owner character");
 	}
-	
+
 	playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if (playerController)
 	{
@@ -42,8 +42,7 @@ void UMouseClickMovement::BeginPlay()
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString("[Error] No player controller found"));
-		UE_LOG(LogTemp, Error, TEXT("No player controller found"));
+		MyUtils::LogError("No player controller found");
 	}
 }
 
@@ -58,20 +57,15 @@ void UMouseClickMovement::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 void UMouseClickMovement::OnMouseClick()
 {
-	if (!playerController || !AIController)
-	{
-		return;
-	}
-	
+	if (!playerController || !AIController) return;
+
 	FVector position, end;
 	GetTraceStartEnd(position, end);
 
 	FHitResult hitResult;
 	const bool isHit = GetWorld()->LineTraceSingleByChannel(hitResult, position, end, ECC_GameTraceChannel1);
-	if (isHit)
-	{
-		AIController->MoveToLocation(hitResult.ImpactPoint);
-	}
+	if (!isHit) return;
+	AIController->MoveToLocation(hitResult.ImpactPoint);
 }
 
 void UMouseClickMovement::GetTraceStartEnd(FVector& position, FVector& end) const

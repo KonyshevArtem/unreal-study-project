@@ -3,6 +3,7 @@
 
 #include "MyAnimInstance.h"
 #include "Engine/Engine.h"
+#include "MyUtils.h"
 
 float UMyAnimInstance::GetHorizontalVelocityMagnitude() const
 {
@@ -19,8 +20,7 @@ void UMyAnimInstance::NativeBeginPlay()
 	axisMovement = Cast<UAxisMovement>(character->GetComponentByClass(UAxisMovement::StaticClass()));
 	if (!axisMovement)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, "[Error] No AxisMovement component on owning actor");
-		UE_LOG(LogTemp, Error, TEXT("No AxisMovement component on owning actor"))
+		MyUtils::LogError("No AxisMovement component on owning actor");
 	}
 }
 

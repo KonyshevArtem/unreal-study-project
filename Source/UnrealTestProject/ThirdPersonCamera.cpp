@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/Engine.h"
+#include "MyUtils.h"
 
 AThirdPersonCamera::AThirdPersonCamera()
 {
@@ -18,14 +19,13 @@ void AThirdPersonCamera::BeginPlay()
 	AActor* parent = GetParentActor();
 	if (!parent)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, "[Error] No parent on ThirdPersonCamera");
-		UE_LOG(LogTemp, Error, TEXT("No parent on ThirdPersonCamera"));
+		MyUtils::LogError("No default target on ThirdPersonCamera");
 		return;
 	}
+	SetTarget(parent);
 	if (!parent->InputComponent)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, "[Error] No input component on ThirdPersonCamera parent");
-		UE_LOG(LogTemp, Error, TEXT("No input component on ThirdPersonCamera parent"));
+		MyUtils::LogError("No input component on ThirdPersonCamera parent");
 		return;
 	}
 	
@@ -38,14 +38,15 @@ void AThirdPersonCamera::BeginPlay()
 void AThirdPersonCamera::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
+	if (!target) return;
+	
 	currentRotation.Add(-mouseY * MouseSensitivity.Y, mouseX * MouseSensitivity.X, 0);
 	currentRotation.Pitch = FMath::Clamp(currentRotation.Pitch, AngleBoundaries.X, AngleBoundaries.Y);
 	const FVector direction = currentRotation.Vector();
-	const FVector orbitPosition = GetParentActor()->GetActorLocation();
+	const FVector orbitPosition = target->GetActorLocation();
 	FVector cameraPosition = orbitPosition + direction * CameraDistance;
 	SetActorRotation((orbitPosition - cameraPosition).Rotation());
-	const FVector cameraOffset = GetActorRightVector() * CameraOffset.X + GetParentActor()->GetActorUpVector() * CameraOffset.Y;
+	const FVector cameraOffset = GetActorRightVector() * CameraOffset.X + target->GetActorUpVector() * CameraOffset.Y;
 	cameraPosition += cameraOffset;
 
 	FHitResult hitResult;
@@ -62,4 +63,9 @@ void AThirdPersonCamera::Tick(float DeltaSeconds)
 	cameraPosition += currentCollisionOffset;
 
 	SetActorLocation(FMath::Lerp(GetActorLocation(), cameraPosition, DeltaSeconds * 100));
+}
+
+void AThirdPersonCamera::SetTarget(AActor* newTarget)
+{
+	target = newTarget;
 }

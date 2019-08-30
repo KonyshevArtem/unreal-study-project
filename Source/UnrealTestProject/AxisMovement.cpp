@@ -7,6 +7,8 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
+#include "MyUtils.h"
+#include "GameFramework/PlayerController.h"
 
 // Sets default values for this component's properties
 UAxisMovement::UAxisMovement()
@@ -26,9 +28,17 @@ void UAxisMovement::BeginPlay()
 
 	ownerCharacter = Cast<ACharacter>(GetOwner());
 	movementComponent = ownerCharacter->GetCharacterMovement();
-	mainCamera = Cast<ACameraActor>(ownerCharacter->Controller->GetViewTarget());
+	if (!movementComponent)
+	{
+		MyUtils::LogError("No movement component on Axis Movement owner");
+	}
 
 	UInputComponent* inputComponent = ownerCharacter->InputComponent;
+	if (!inputComponent)
+	{
+		MyUtils::LogError("No input component on owner of Axis Movement component");
+		return;
+	}
 	inputComponent->BindAxis("Vertical", this, &UAxisMovement::SetVertical);
 	inputComponent->BindAxis("Horizontal", this, &UAxisMovement::SetHorizontal);
 	inputComponent->BindAction("Jump", IE_Pressed, this, &UAxisMovement::Jump);
@@ -43,8 +53,14 @@ void UAxisMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 }
 
 
-void UAxisMovement::RotateActorToVelocity(float DeltaTime) const
+void UAxisMovement::RotateActorToVelocity(float DeltaTime)
 {
+	if (!mainCamera)
+	{
+		mainCamera = Cast<ACameraActor>(ownerCharacter->Controller->GetViewTarget());
+	}
+	if (!mainCamera || !movementComponent) return;
+	
 	const FVector cameraForward = mainCamera->GetActorForwardVector();
 	const FVector cameraRight = mainCamera->GetActorRightVector();
 	FVector moveInput = cameraForward * Vertical + cameraRight * Horizontal;

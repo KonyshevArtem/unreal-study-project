@@ -25,20 +25,19 @@ protected:
 
 public:
 	float Vertical, Horizontal;
-	
+
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-
 	UPROPERTY()
 		ACharacter* ownerCharacter;
 	UPROPERTY()
-		ACameraActor* mainCamera;
-	UPROPERTY()
 		UCharacterMovementComponent* movementComponent;
+	UPROPERTY()
+		ACameraActor* mainCamera;
 
-	void RotateActorToVelocity(float DeltaTime) const;
+	void RotateActorToVelocity(float DeltaTime);
 	void SetVertical(float axisValue) { Vertical = axisValue; }
 	void SetHorizontal(float axisValue) { Horizontal = axisValue; }
 	void Jump() { ownerCharacter->Jump(); }

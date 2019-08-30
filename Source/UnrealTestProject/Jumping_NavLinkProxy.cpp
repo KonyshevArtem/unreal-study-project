@@ -13,7 +13,7 @@ void AJumpingNavLinkProxy::BeginPlay()
 }
 
 void AJumpingNavLinkProxy::BeginJump(AActor* actor, const FVector& destination)
-{	
+{
 	ACharacter* character = Cast<ACharacter>(actor);
 	UMyAnimInstance* animInstance = Cast<UMyAnimInstance>(character->GetMesh()->GetAnimInstance());
 	animInstance->IsFalling = true;
@@ -28,13 +28,13 @@ void AJumpingNavLinkProxy::BeginJump(AActor* actor, const FVector& destination)
 void AJumpingNavLinkProxy::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
+
 	for (const auto tuple : currentJumps)
 	{
 		UMyAnimInstance* animInstance = tuple.Key;
 		FVector jumpStart = tuple.Value.Start;
 		FVector jumpEnd = tuple.Value.End;
-		
+
 		const float progress = animInstance->GetCurveValue(FName("Progress"));
 		const FVector location = FMath::Lerp(jumpStart, jumpEnd, progress);
 		animInstance->GetOwningActor()->SetActorLocation(location);

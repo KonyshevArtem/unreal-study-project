@@ -2,6 +2,7 @@
 
 
 #include "MyUtils.h"
+#include "Engine/Engine.h"
 #include "Runtime/Engine/Classes/GameFramework/Actor.h"
 #include "Runtime/Core/Public/Containers/Array.h"
 #include "TimelineCurveFloat.h"
@@ -43,4 +44,10 @@ UTimelineComponent* MyUtils::CreateTimeline(AActor* owner, FName name, TArray<UT
 
 	timeline->RegisterComponent();
 	return timeline;
+}
+
+void MyUtils::LogError(FString message)
+{
+	UE_LOG(LogTemp, Error, TEXT("%s"), *message);
+	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, "[Error] " + message);
 }

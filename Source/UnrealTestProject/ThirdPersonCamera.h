@@ -30,6 +30,8 @@ private:
 		FVector currentCollisionOffset;
 	UPROPERTY()
 		FVector targetCollisionOffset;
+	UPROPERTY()
+		AActor* target;
 
 	void SetMouseX(float value) { mouseX = value; }
 	void SetMouseY(float value) { mouseY = value; }
@@ -43,4 +45,7 @@ public:
 		FVector2D MouseSensitivity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera parameters")
 		FVector2D AngleBoundaries;
+
+	UFUNCTION(BlueprintCallable)
+		void SetTarget(AActor* newTarget);
 };

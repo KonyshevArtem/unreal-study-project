@@ -26,8 +26,7 @@ void AOpenableDoor::BeginPlay()
 	triggerDelegate.BindUFunction(this, FName("OnTriggerBeginOverlap"));
 	if (!InnerTrigger || !OuterTrigger)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Openable door's triggers not set"))
-			GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, "[Error] Openable door's triggers not set");
+		MyUtils::LogError("Openable door's triggers not set");
 		return;
 	}
 	InnerTrigger->OnComponentBeginOverlap.Add(triggerDelegate);
@@ -46,10 +45,8 @@ void AOpenableDoor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	SetIsOpened();
-	if (openDoorTimeline)
-	{
-		openDoorTimeline->TickComponent(DeltaTime, LEVELTICK_TimeOnly, nullptr);
-	}
+	if (!openDoorTimeline) return;
+	openDoorTimeline->TickComponent(DeltaTime, LEVELTICK_TimeOnly, nullptr);
 }
 
 void AOpenableDoor::OnTriggerBeginOverlap(UPrimitiveComponent* overlappedComponent, AActor* otherActor)
@@ -59,7 +56,7 @@ void AOpenableDoor::OnTriggerBeginOverlap(UPrimitiveComponent* overlappedCompone
 	IsOverlapping = true;
 	rotationMultiplier = rotationMultiplierToTrigger[Cast<UBoxComponent>(overlappedComponent)];
 	GetWorldTimerManager().SetTimer(openDoorDelayHandle, this, &AOpenableDoor::OpenDoor, 0.2f);
-	if (AMyCharacter* myCharacter = Cast<AMyCharacter>(otherActor))
+	if (AMyCharacter * myCharacter = Cast<AMyCharacter>(otherActor))
 	{
 		myCharacter->OpenDoor();
 	}
@@ -85,6 +82,11 @@ void AOpenableDoor::SetDoorRotation(float interpolatedVal)
 
 void AOpenableDoor::InitOpenDoorTimeline()
 {
+	if (!DoorRotationZCurve)
+	{
+		MyUtils::LogError("Door rotation z curve not set");
+		return;
+	}
 	FOnTimelineFloat onTimelineCallback;
 	onTimelineCallback.BindUFunction(this, FName("SetDoorRotation"));
 	UTimelineCurveFloat* openDoorCurveInfo = NewObject<UTimelineCurveFloat>();
@@ -98,6 +100,7 @@ void AOpenableDoor::InitOpenDoorTimeline()
 void AOpenableDoor::OpenDoor()
 {
 	appliedRotationMultiplier = rotationMultiplier;
+	if (!openDoorTimeline) return;
 	openDoorTimeline->PlayFromStart();
 }
 

@@ -4,6 +4,7 @@
 #include "MyCamera.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Engine.h"
+#include "MyUtils.h"
 
 // Sets default values
 AMyCamera::AMyCamera()
@@ -19,8 +20,7 @@ void AMyCamera::BeginPlay()
 	targetActor = GetParentActor();
 	if (!targetActor)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString("[Error]: No parent actor on MyCamera"));
-		UE_LOG(LogTemp, Error, TEXT("No parent actor on MyCamera"));
+		MyUtils::LogError("No parent actor on MyCamera");
 	}
 }
 
@@ -28,10 +28,9 @@ void AMyCamera::BeginPlay()
 void AMyCamera::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (targetActor)
-	{
-		SetActorLocation(targetActor->GetActorLocation() + CameraOffset);
-		SetActorRotation((targetActor->GetActorLocation() - GetActorLocation()).Rotation());
-	}
+	if (!targetActor) return;
+	
+	SetActorLocation(targetActor->GetActorLocation() + CameraOffset);
+	SetActorRotation((targetActor->GetActorLocation() - GetActorLocation()).Rotation());
 }
 
