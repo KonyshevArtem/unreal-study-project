@@ -89,6 +89,13 @@ void UAxisMovement::RotateActorToVelocity(float DeltaTime)
 		const FRotator newRotation = FMath::Lerp(ownerCharacter->GetActorRotation(), moveInput.Rotation(), DeltaTime * 10);
 		ownerCharacter->SetActorRotation(newRotation);
 	}
+	else if (movementComponent->IsFalling())
+	{
+		FVector velocity = movementComponent->Velocity;
+		velocity.Z = 0;
+		const FRotator newRotation = FMath::Lerp(ownerCharacter->GetActorRotation(), velocity.Rotation(), DeltaTime * 10);
+		ownerCharacter->SetActorRotation(newRotation);
+	}
 }
 
 void UAxisMovement::Jump()
