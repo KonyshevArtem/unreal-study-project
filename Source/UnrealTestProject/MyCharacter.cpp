@@ -27,7 +27,10 @@ void AMyCharacter::OpenDoor()
 		MyUtils::LogError("No open door anim montage set");
 		return;
 	}
-	PlayAnimMontage(OpenDoorAnimMontage);
+	if (GetCurrentMontage() != OpenDoorAnimMontage)
+	{
+		PlayAnimMontage(OpenDoorAnimMontage);
+	}
 }
 
 // Called every frame

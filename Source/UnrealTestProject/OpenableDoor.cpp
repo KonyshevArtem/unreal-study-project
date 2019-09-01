@@ -51,9 +51,10 @@ void AOpenableDoor::Tick(float DeltaTime)
 
 void AOpenableDoor::OnTriggerBeginOverlap(UPrimitiveComponent* overlappedComponent, AActor* otherActor)
 {
-	if (IsOverlapping || IsOpened) return;
-
+	if (IsOverlapping) return;
 	IsOverlapping = true;
+	if (IsOpened) return;
+	
 	rotationMultiplier = rotationMultiplierToTrigger[Cast<UBoxComponent>(overlappedComponent)];
 	GetWorldTimerManager().SetTimer(openDoorDelayHandle, this, &AOpenableDoor::OpenDoor, 0.2f);
 	if (AMyCharacter * myCharacter = Cast<AMyCharacter>(otherActor))

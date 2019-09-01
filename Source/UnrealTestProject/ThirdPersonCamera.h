@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Camera/CameraActor.h"
+#include "ThirdPersonCameraParameters.h"
 #include "ThirdPersonCamera.generated.h"
 
 /**
@@ -31,20 +32,23 @@ private:
 	UPROPERTY()
 		FVector targetCollisionOffset;
 	UPROPERTY()
-		AActor* target;
+		UThirdPersonCameraParameters* target;
 
 	void SetMouseX(float value) { mouseX = value; }
 	void SetMouseY(float value) { mouseY = value; }
 
+	FVector GetNewCameraPosition(FVector orbitPosition) const;
+	FVector GetCameraOffset() const;
+	FVector GetCollidedCameraPosition(FVector orbitPosition, FVector cameraPosition);
+	void ApplyRotation();
+
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera parameters")
-		float CameraDistance;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera parameters")
-		FVector2D CameraOffset;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera parameters")
 		FVector2D MouseSensitivity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera parameters")
-		FVector2D AngleBoundaries;
+		float RotationSpeed = 50;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera parameters")
+		float PositionSpeed = 50;
 
 	UFUNCTION(BlueprintCallable)
 		void SetTarget(AActor* newTarget);

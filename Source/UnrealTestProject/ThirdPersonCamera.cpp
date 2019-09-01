@@ -17,11 +17,6 @@ void AThirdPersonCamera::BeginPlay()
 	Super::BeginPlay();
 
 	AActor* parent = GetParentActor();
-	if (!parent)
-	{
-		MyUtils::LogError("No default target on ThirdPersonCamera");
-		return;
-	}
 	SetTarget(parent);
 
 	APlayerController* playerController = GetWorld()->GetFirstPlayerController();
@@ -42,33 +37,57 @@ void AThirdPersonCamera::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (!target) return;
-	
-	currentRotation.Add(-mouseY * MouseSensitivity.Y, mouseX * MouseSensitivity.X, 0);
-	currentRotation.Pitch = FMath::Clamp(currentRotation.Pitch, AngleBoundaries.X, AngleBoundaries.Y);
-	const FVector direction = currentRotation.Vector();
-	const FVector orbitPosition = target->GetActorLocation();
-	FVector cameraPosition = orbitPosition + direction * CameraDistance;
-	SetActorRotation((orbitPosition - cameraPosition).Rotation());
-	const FVector cameraOffset = GetActorRightVector() * CameraOffset.X + target->GetActorUpVector() * CameraOffset.Y;
-	cameraPosition += cameraOffset;
 
+	ApplyRotation();
+	const FVector orbitPosition = target->GetOwner()->GetActorLocation();
+	const FVector cameraPosition = GetNewCameraPosition(orbitPosition);
+	const FVector relativeCameraOffset = GetCameraOffset();
+	const FVector collidedCameraPosition = GetCollidedCameraPosition(orbitPosition, cameraPosition + relativeCameraOffset);
+
+	SetActorRotation(FMath::RInterpTo(GetActorRotation(), (orbitPosition - cameraPosition).Rotation(), DeltaSeconds, RotationSpeed));
+	SetActorLocation(FMath::VInterpTo(GetActorLocation(), collidedCameraPosition, DeltaSeconds, PositionSpeed));
+}
+
+FVector AThirdPersonCamera::GetNewCameraPosition(FVector orbitPosition) const
+{
+	const FVector direction = currentRotation.Vector();
+	const FVector cameraPosition = orbitPosition + direction * target->CameraDistance;
+	return cameraPosition;
+}
+
+FVector AThirdPersonCamera::GetCameraOffset() const
+{
+	return GetActorRightVector() * target->CameraOffset.X + FVector::UpVector * target->CameraOffset.Y;
+}
+
+FVector AThirdPersonCamera::GetCollidedCameraPosition(FVector orbitPosition, FVector cameraPosition)
+{
 	FHitResult hitResult;
-	if (GetWorld()->LineTraceSingleByChannel(hitResult, orbitPosition + FVector(0, 0, CameraOffset.Y), cameraPosition, ECC_Camera))
+	targetCollisionOffset = FVector::ZeroVector;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(target->GetOwner());
+	if (GetWorld()->LineTraceSingleByChannel(hitResult, orbitPosition + FVector(0, 0, target->CameraOffset.Y),
+	                                         cameraPosition, ECC_Camera, params))
 	{
 		targetCollisionOffset = hitResult.ImpactNormal * 10;
 		cameraPosition = hitResult.ImpactPoint;
 	}
-	else
-	{
-		targetCollisionOffset = FVector::ZeroVector;
-	}
-	currentCollisionOffset = FMath::Lerp(currentCollisionOffset, targetCollisionOffset, DeltaSeconds * 10);
-	cameraPosition += currentCollisionOffset;
+	currentCollisionOffset = FMath::VInterpConstantTo(currentCollisionOffset, targetCollisionOffset,
+	                                                  GetWorld()->GetDeltaSeconds(), 100);
+	return cameraPosition + currentCollisionOffset;
+}
 
-	SetActorLocation(FMath::Lerp(GetActorLocation(), cameraPosition, DeltaSeconds * 100));
+void AThirdPersonCamera::ApplyRotation()
+{
+	currentRotation.Add(-mouseY * MouseSensitivity.Y, mouseX * MouseSensitivity.X, 0);
+	currentRotation.Pitch = FMath::Clamp(currentRotation.Pitch, target->AngleBoundaries.X, target->AngleBoundaries.Y);
 }
 
 void AThirdPersonCamera::SetTarget(AActor* newTarget)
 {
-	target = newTarget;
+	if (const auto cameraParameters = Cast<UThirdPersonCameraParameters>(
+		newTarget->GetComponentByClass(UThirdPersonCameraParameters::StaticClass())))
+	{
+		target = cameraParameters;
+	}
 }
