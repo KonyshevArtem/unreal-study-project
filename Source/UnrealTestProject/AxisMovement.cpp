@@ -8,6 +8,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "MyUtils.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimInstance.h"
 
 // Sets default values for this component's properties
 UAxisMovement::UAxisMovement()
@@ -26,6 +28,12 @@ void UAxisMovement::BeginPlay()
 	Super::BeginPlay();
 
 	ownerCharacter = Cast<ACharacter>(GetOwner());
+	USkeletalMeshComponent* mesh = ownerCharacter->GetMesh();
+	if (mesh)
+	{
+		animInstance = mesh->GetAnimInstance();
+	}
+	
 	movementComponent = ownerCharacter->GetCharacterMovement();
 	if (!movementComponent)
 	{
@@ -57,6 +65,16 @@ void UAxisMovement::InitializeInput(UInputComponent* inputComponent)
 }
 
 
+FVector UAxisMovement::GetMoveInput() const
+{
+	const FVector cameraForward = mainCamera->GetActorForwardVector();
+	const FVector cameraRight = mainCamera->GetActorRightVector();
+	FVector moveInput = cameraForward * Vertical + cameraRight * Horizontal;
+	moveInput.Z = 0;
+	moveInput.Normalize();
+	return moveInput;
+}
+
 void UAxisMovement::RotateActorToVelocity(float DeltaTime)
 {
 	if (!mainCamera)
@@ -64,16 +82,23 @@ void UAxisMovement::RotateActorToVelocity(float DeltaTime)
 		mainCamera = Cast<ACameraActor>(ownerCharacter->Controller->GetViewTarget());
 	}
 	if (!mainCamera || !movementComponent) return;
-	
-	const FVector cameraForward = mainCamera->GetActorForwardVector();
-	const FVector cameraRight = mainCamera->GetActorRightVector();
-	FVector moveInput = cameraForward * Vertical + cameraRight * Horizontal;
-	moveInput.Z = 0;
-	moveInput.Normalize();
+
+	const FVector moveInput = GetMoveInput();
 	if (moveInput.Size() > 0.1 && !movementComponent->IsFalling())
 	{
 		const FRotator newRotation = FMath::Lerp(ownerCharacter->GetActorRotation(), moveInput.Rotation(), DeltaTime * 10);
 		ownerCharacter->SetActorRotation(newRotation);
 	}
+}
+
+void UAxisMovement::Jump()
+{
+	const FVector moveInput = GetMoveInput();
+	if (animInstance)
+	{
+		animInstance->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
+	}
+	ownerCharacter->Jump();
+	movementComponent->Velocity = moveInput * JumpSpeed;
 }
 

@@ -26,6 +26,9 @@ protected:
 public:
 	float Vertical, Horizontal;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Axis movement parameters")
+		float JumpSpeed = 500;
+
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void InitializeInput(UInputComponent* InputComponent);
@@ -37,9 +40,12 @@ private:
 		UCharacterMovementComponent* movementComponent;
 	UPROPERTY()
 		ACameraActor* mainCamera;
+	UPROPERTY()
+		UAnimInstance* animInstance;
 
+	FVector GetMoveInput() const;
 	void RotateActorToVelocity(float DeltaTime);
 	void SetVertical(float axisValue) { Vertical = axisValue; }
 	void SetHorizontal(float axisValue) { Horizontal = axisValue; }
-	void Jump() { ownerCharacter->Jump(); }
+	void Jump();
 };
