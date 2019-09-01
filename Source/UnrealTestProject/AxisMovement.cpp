@@ -100,6 +100,8 @@ void UAxisMovement::RotateActorToVelocity(float DeltaTime)
 
 void UAxisMovement::Jump()
 {
+	if (movementComponent->IsFalling()) return;
+	
 	const FVector moveInput = GetMoveInput();
 	if (animInstance)
 	{
