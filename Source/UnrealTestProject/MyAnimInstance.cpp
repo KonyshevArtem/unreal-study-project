@@ -3,7 +3,6 @@
 
 #include "MyAnimInstance.h"
 #include "Engine/Engine.h"
-#include "MyUtils.h"
 
 float UMyAnimInstance::GetHorizontalVelocityMagnitude() const
 {
@@ -17,30 +16,24 @@ void UMyAnimInstance::NativeBeginPlay()
 	Super::NativeBeginPlay();
 
 	character = Cast<ACharacter>(GetOwningActor());
-	axisMovement = Cast<UAxisMovement>(character->GetComponentByClass(UAxisMovement::StaticClass()));
-	if (!axisMovement)
-	{
-		MyUtils::LogError("No AxisMovement component on owning actor");
-	}
 }
 
 void UMyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
-	if (!axisMovement) return;
-
+	if (!character) return;
+	
 	SetVelocity();
 	SetLegState();
 	SetIsFalling();
 }
 
 void UMyAnimInstance::SetVelocity()
-{
-	FVector2D inputVector = FVector2D(axisMovement->Horizontal, axisMovement->Vertical);
-	inputVector.Normalize();
+{	
+	const FVector inputVector = character->GetMovementComponent()->GetLastInputVector();
 	InputMagnitude = inputVector.Size();
-	Velocity = character->GetMovementComponent()->Velocity.GetSafeNormal();
+	Velocity = inputVector;
 }
 
 void UMyAnimInstance::SetLegState()
@@ -50,7 +43,7 @@ void UMyAnimInstance::SetLegState()
 }
 
 void UMyAnimInstance::SetIsFalling()
-{
+{	
 	IsFalling = character->GetMovementComponent()->IsFalling();
 	RootMotionMode = IsFalling ? ERootMotionMode::IgnoreRootMotion : ERootMotionMode::RootMotionFromEverything;
 }

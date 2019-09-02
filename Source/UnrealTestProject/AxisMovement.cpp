@@ -10,6 +10,7 @@
 #include "MyUtils.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
+#include "AIController.h"
 
 // Sets default values for this component's properties
 UAxisMovement::UAxisMovement()
@@ -54,6 +55,9 @@ void UAxisMovement::BeginPlay()
 void UAxisMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	SetMainCamera();
+	AddMoveInput();
 	RotateActorToVelocity(DeltaTime);
 }
 
@@ -65,25 +69,41 @@ void UAxisMovement::InitializeInput(UInputComponent* inputComponent)
 }
 
 
-FVector UAxisMovement::GetMoveInput() const
-{
-	const FVector cameraForward = mainCamera->GetActorForwardVector();
-	const FVector cameraRight = mainCamera->GetActorRightVector();
-	FVector moveInput = cameraForward * Vertical + cameraRight * Horizontal;
-	moveInput.Z = 0;
-	moveInput.Normalize();
-	return moveInput;
-}
-
-void UAxisMovement::RotateActorToVelocity(float DeltaTime)
+void UAxisMovement::SetMainCamera()
 {
 	if (!mainCamera)
 	{
 		mainCamera = Cast<ACameraActor>(ownerCharacter->Controller->GetViewTarget());
 	}
+}
+
+FVector UAxisMovement::GetMoveInput() const
+{
+	if (!mainCamera) return FVector::ZeroVector;
+	
+	const FVector cameraForward = mainCamera->GetActorForwardVector();
+	const FVector cameraRight = mainCamera->GetActorRightVector();
+	FVector moveInput = cameraForward * vertical + cameraRight * horizontal;
+	moveInput.Z = 0;
+	moveInput.Normalize();
+	return moveInput;
+}
+
+void UAxisMovement::AddMoveInput()
+{
+	const FVector moveInput = GetMoveInput();
+	if (moveInput.Size() > 0.1f)
+	{
+		movementComponent->StopActiveMovement();
+	}
+	ownerCharacter->AddMovementInput(moveInput);
+}
+
+void UAxisMovement::RotateActorToVelocity(float DeltaTime) const
+{
 	if (!mainCamera || !movementComponent) return;
 
-	const FVector moveInput = GetMoveInput();
+	const FVector moveInput = movementComponent->GetLastInputVector();
 	if (moveInput.Size() > 0.1 && !movementComponent->IsFalling())
 	{
 		const FRotator newRotation = FMath::Lerp(ownerCharacter->GetActorRotation(), moveInput.Rotation(), DeltaTime * 10);
@@ -101,8 +121,9 @@ void UAxisMovement::RotateActorToVelocity(float DeltaTime)
 void UAxisMovement::Jump()
 {
 	if (movementComponent->IsFalling()) return;
-	
+
 	const FVector moveInput = GetMoveInput();
+	movementComponent->StopActiveMovement();
 	if (animInstance)
 	{
 		animInstance->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
@@ -110,4 +131,3 @@ void UAxisMovement::Jump()
 	ownerCharacter->Jump();
 	movementComponent->Velocity = moveInput * JumpSpeed;
 }
-

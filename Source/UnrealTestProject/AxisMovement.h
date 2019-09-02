@@ -24,8 +24,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	float Vertical, Horizontal;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Axis movement parameters")
 		float JumpSpeed = 500;
 
@@ -34,6 +32,8 @@ public:
 	void InitializeInput(UInputComponent* InputComponent);
 
 private:
+	float vertical, horizontal;
+	
 	UPROPERTY()
 		ACharacter* ownerCharacter;
 	UPROPERTY()
@@ -43,9 +43,11 @@ private:
 	UPROPERTY()
 		UAnimInstance* animInstance;
 
+	void SetMainCamera();
 	FVector GetMoveInput() const;
-	void RotateActorToVelocity(float DeltaTime);
-	void SetVertical(float axisValue) { Vertical = axisValue; }
-	void SetHorizontal(float axisValue) { Horizontal = axisValue; }
+	void AddMoveInput();
+	void RotateActorToVelocity(float DeltaTime) const;
+	void SetVertical(float axisValue) { vertical = axisValue; }
+	void SetHorizontal(float axisValue) { horizontal = axisValue; }
 	void Jump();
 };
