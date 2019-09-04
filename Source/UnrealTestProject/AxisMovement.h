@@ -7,11 +7,12 @@
 #include "GameFramework/Character.h"
 #include "Camera/CameraActor.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "RequireInput.h"
 #include "AxisMovement.generated.h"
 
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class UNREALTESTPROJECT_API UAxisMovement : public UActorComponent
+class UNREALTESTPROJECT_API UAxisMovement : public UActorComponent, public IRequireInput
 {
 	GENERATED_BODY()
 
@@ -27,9 +28,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Axis movement parameters")
 		float JumpSpeed = 500;
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Axis movement methods")
+		void InitializeInput(UInputComponent* inputComponent);
+	virtual void InitializeInput_Implementation(UInputComponent* inputComponent) override;
+	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void InitializeInput(UInputComponent* InputComponent);
 
 private:
 	float vertical, horizontal;

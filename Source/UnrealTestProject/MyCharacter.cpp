@@ -43,9 +43,14 @@ void AMyCharacter::Tick(float DeltaTime)
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	if (UAxisMovement * axisMovement = Cast<UAxisMovement>(GetComponentByClass(UAxisMovement::StaticClass())))
+
+	TSet<UActorComponent*> components = GetComponents();
+	for (UActorComponent* component : components)
 	{
-		axisMovement->InitializeInput(PlayerInputComponent);
+		if (IRequireInput* componentWithInput = Cast<IRequireInput>(component))
+		{
+			IRequireInput::Execute_InitializeInput(component, PlayerInputComponent);
+		}
 	}
 }
 

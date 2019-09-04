@@ -22,15 +22,13 @@ void AOpenableDoor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TScriptDelegate<FWeakObjectPtr> triggerDelegate;
-	triggerDelegate.BindUFunction(this, FName("OnTriggerBeginOverlap"));
 	if (!InnerTrigger || !OuterTrigger)
 	{
 		MyUtils::LogError("Openable door's triggers not set");
 		return;
 	}
-	InnerTrigger->OnComponentBeginOverlap.Add(triggerDelegate);
-	OuterTrigger->OnComponentBeginOverlap.Add(triggerDelegate);
+	InnerTrigger->OnComponentBeginOverlap.AddDynamic(this, &AOpenableDoor::OnTriggerBeginOverlap);
+	OuterTrigger->OnComponentBeginOverlap.AddDynamic(this, &AOpenableDoor::OnTriggerBeginOverlap);
 
 	rotationMultiplierToTrigger = TMap<UBoxComponent*, int>();
 	rotationMultiplierToTrigger.Add(InnerTrigger, 1);
@@ -49,15 +47,17 @@ void AOpenableDoor::Tick(float DeltaTime)
 	openDoorTimeline->TickComponent(DeltaTime, LEVELTICK_TimeOnly, nullptr);
 }
 
-void AOpenableDoor::OnTriggerBeginOverlap(UPrimitiveComponent* overlappedComponent, AActor* otherActor)
+void AOpenableDoor::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+                                          UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                                          const FHitResult& SweepResult)
 {
 	if (IsOverlapping) return;
 	IsOverlapping = true;
 	if (IsOpened) return;
 	
-	rotationMultiplier = rotationMultiplierToTrigger[Cast<UBoxComponent>(overlappedComponent)];
+	rotationMultiplier = rotationMultiplierToTrigger[Cast<UBoxComponent>(OverlappedComp)];
 	GetWorldTimerManager().SetTimer(openDoorDelayHandle, this, &AOpenableDoor::OpenDoor, 0.2f);
-	if (AMyCharacter * myCharacter = Cast<AMyCharacter>(otherActor))
+	if (AMyCharacter * myCharacter = Cast<AMyCharacter>(OtherActor))
 	{
 		myCharacter->OpenDoor();
 	}

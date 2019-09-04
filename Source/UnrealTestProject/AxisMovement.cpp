@@ -26,7 +26,7 @@ UAxisMovement::UAxisMovement()
 // Called when the game starts
 void UAxisMovement::BeginPlay()
 {
-	Super::BeginPlay();
+	UActorComponent::BeginPlay();
 
 	ownerCharacter = Cast<ACharacter>(GetOwner());
 	USkeletalMeshComponent* mesh = ownerCharacter->GetMesh();
@@ -54,14 +54,14 @@ void UAxisMovement::BeginPlay()
 // Called every frame
 void UAxisMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	UActorComponent::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	SetMainCamera();
 	AddMoveInput();
 	RotateActorToVelocity(DeltaTime);
 }
 
-void UAxisMovement::InitializeInput(UInputComponent* inputComponent)
+void UAxisMovement::InitializeInput_Implementation(UInputComponent* inputComponent)
 {
 	inputComponent->BindAxis("Vertical", this, &UAxisMovement::SetVertical);
 	inputComponent->BindAxis("Horizontal", this, &UAxisMovement::SetHorizontal);
