@@ -32,6 +32,7 @@ private:
 	void SetThrottle(float axisValue);
 	void EnableHandbrake();
 	void DisableHandbrake();
+	void GetOutOfCar();
 	
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Car properties")
@@ -41,6 +42,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Car properties")
 		USceneComponent* PassengerEntryPoint;
 
+	void GetInCar(ACharacter* driver);
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

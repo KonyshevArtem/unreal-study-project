@@ -1,19 +1,19 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "4.22",
+	"EngineAssociation": "4.23",
 	"Category": "",
 	"Description": "",
-  "Modules": [
-    {
-      "Name": "UnrealTestProject",
-      "Type": "Runtime",
-      "LoadingPhase": "Default",
-      "AdditionalDependencies": [
-        "Engine",
-        "AIModule",
-        "CoreUObject",
-        "PhysXVehicles"
-      ]
-    }
-  ]
+	"Modules": [
+		{
+			"Name": "UnrealTestProject",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"AIModule",
+				"CoreUObject",
+				"PhysXVehicles"
+			]
+		}
+	]
 }

@@ -24,6 +24,8 @@ public:
 		float RoundedLegState;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation parameters")
 		bool IsFalling;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation parameters")
+		bool IsDriving;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (BlueprintThreadSafe))
 		float GetHorizontalVelocityMagnitude() const;

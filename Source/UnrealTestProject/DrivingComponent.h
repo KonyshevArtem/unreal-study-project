@@ -23,11 +23,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		AMyCar* nearestCar;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		bool IsEnteringCar;
-
 	UFUNCTION(BlueprintCallable)
 		bool HasReachedCarEnter() const;
 	
@@ -40,15 +35,23 @@ public:
 
 private:
 	UPROPERTY()
+		AMyCar* triggeredCar;
+	UPROPERTY()
+		bool isEnteringCar;
+	UPROPERTY()
 		USceneComponent* carEnterPoint;
 	UPROPERTY()
+		ACharacter* ownerCharacter;
+	UPROPERTY()
 		AController* ownerController;
+	UPROPERTY()
+		AMyCar* targetCar;
 	
 	UFUNCTION()
 		void ActorBeginOverlap(AActor* thisActor, AActor* otherActor);
 	UFUNCTION()
 		void ActorEndOverlap(AActor* thisActor, AActor* otherActor);
-
+	
 	void StopGoingToCar();
 	void StopGoingToCar(float axisValues);
 	void GoToCar();

@@ -7,6 +7,7 @@
 #include "NavigationPath.h"
 #include "Runtime/AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 #include "MyUtils.h"
+#include "GameFramework/Controller.h"
 
 // Sets default values for this component's properties
 UDrivingComponent::UDrivingComponent()
@@ -24,7 +25,7 @@ void UDrivingComponent::BeginPlay()
 {
 	UActorComponent::BeginPlay();
 
-	ACharacter* ownerCharacter = Cast<ACharacter>(GetOwner());
+	ownerCharacter = Cast<ACharacter>(GetOwner());
 	if (!ownerCharacter)
 	{
 		MyUtils::LogError("Driver component requires ACharacter as owner");
@@ -41,12 +42,22 @@ void UDrivingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
 	UActorComponent::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	if (isEnteringCar)
+	{
+		if (ownerCharacter->GetMovementComponent()->IsFalling())
+		{
+			isEnteringCar = false;
+		}
+		else if (HasReachedCarEnter())
+		{
+			targetCar->GetInCar(ownerCharacter);
+		}
+	}
 }
 
 bool UDrivingComponent::HasReachedCarEnter() const
 {
-	if (!IsEnteringCar) return false;
+	if (!isEnteringCar) return false;
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(ownerController, carEnterPoint->GetComponentLocation());
 
 	const float distanceToCar = FVector::Distance(GetOwner()->GetActorLocation(), carEnterPoint->GetComponentLocation());
@@ -55,8 +66,7 @@ bool UDrivingComponent::HasReachedCarEnter() const
 
 void UDrivingComponent::InitializeInput_Implementation(UInputComponent* inputComponent)
 {
-	inputComponent->BindAction("Interact", IE_Pressed, this, &UDrivingComponent::GoToCar);
-	inputComponent->BindAction("Jump", IE_Pressed, this, &UDrivingComponent::StopGoingToCar);
+	inputComponent->BindAction("Interact", IE_Released, this, &UDrivingComponent::GoToCar);
 	inputComponent->BindAxis("Horizontal", this, &UDrivingComponent::StopGoingToCar);
 	inputComponent->BindAxis("Vertical", this, &UDrivingComponent::StopGoingToCar);
 }
@@ -65,7 +75,7 @@ void UDrivingComponent::ActorBeginOverlap(AActor* thisActor, AActor* otherActor)
 {
 	if (AMyCar* car = Cast<AMyCar>(otherActor))
 	{
-		nearestCar = car;
+		triggeredCar = car;
 	}
 }
 
@@ -73,36 +83,38 @@ void UDrivingComponent::ActorEndOverlap(AActor* thisActor, AActor* otherActor)
 {
 	if (AMyCar * car = Cast<AMyCar>(otherActor))
 	{
-		if (car == nearestCar)
+		if (car == triggeredCar)
 		{
-			nearestCar = nullptr;
+			triggeredCar = nullptr;
 		}
 	}
-}
-
-void UDrivingComponent::StopGoingToCar()
-{
-	IsEnteringCar = false;
 }
 
 void UDrivingComponent::StopGoingToCar(float axisValues)
 {
 	if (FMath::Abs(axisValues) > 0.1f)
 	{
-		StopGoingToCar();
+		isEnteringCar = false;
 	}
 }
 
 void UDrivingComponent::GoToCar()
 {
-	if (!nearestCar || IsEnteringCar) return;
+	if (!triggeredCar || isEnteringCar) return;
 
-	IsEnteringCar = true;
-	carEnterPoint = GetClosestEnterPoint(nearestCar);
+	targetCar = triggeredCar;
+	carEnterPoint = GetClosestEnterPoint(targetCar);
+	isEnteringCar = carEnterPoint != nullptr;
 }
 
 USceneComponent* UDrivingComponent::GetClosestEnterPoint(AMyCar* car)
 {
+	if (!car->DriverEntryPoint || !car->PassengerEntryPoint)
+	{
+		MyUtils::LogError("Target car has no enter points");
+		return nullptr;
+	}
+	
 	const float driverDistance = GetDistanceToEnterPoint(car->DriverEntryPoint);
 	const float passengerDistance = GetDistanceToEnterPoint(car->PassengerEntryPoint);
 	return driverDistance < passengerDistance ? car->DriverEntryPoint : car->PassengerEntryPoint;
