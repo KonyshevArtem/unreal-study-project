@@ -6,27 +6,27 @@
 #include "Components/ActorComponent.h"
 #include "RequireInput.h"
 #include "MyCar.h"
-#include "DrivingComponent.generated.h"
+#include "InteractComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class UNREALTESTPROJECT_API UDrivingComponent : public UActorComponent, public IRequireInput
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class UNREALTESTPROJECT_API UInteractComponent : public UActorComponent, public IRequireInput
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
-	UDrivingComponent();
+	UInteractComponent();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintCallable)
-		bool HasReachedCarEnter() const;
-	
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Driving component methods")
+	UFUNCTION(BlueprintCallable, Category = "Interact component methods")
+		void EndInteract() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interact component methods")
 		void InitializeInput(UInputComponent* inputComponent);
 	virtual void InitializeInput_Implementation(UInputComponent* inputComponent) override;
 
@@ -35,26 +35,19 @@ public:
 
 private:
 	UPROPERTY()
-		AMyCar* triggeredCar;
-	UPROPERTY()
-		bool isEnteringCar;
-	UPROPERTY()
-		USceneComponent* carEnterPoint;
-	UPROPERTY()
 		ACharacter* ownerCharacter;
+
 	UPROPERTY()
-		AController* ownerController;
+		TScriptInterface<IInteractable> triggeredInteractable = TScriptInterface<IInteractable>();
 	UPROPERTY()
-		AMyCar* targetCar;
-	
+		TScriptInterface<IInteractable> targetInteractable = TScriptInterface<IInteractable>();
+
 	UFUNCTION()
 		void ActorBeginOverlap(AActor* thisActor, AActor* otherActor);
 	UFUNCTION()
 		void ActorEndOverlap(AActor* thisActor, AActor* otherActor);
-	
-	void StopGoingToCar();
-	void StopGoingToCar(float axisValues);
-	void GoToCar();
-	USceneComponent* GetClosestEnterPoint(AMyCar* car);
-	float GetDistanceToEnterPoint(USceneComponent* enterPoint);
+
+	void StopInteracting();
+	void ReceiveAxisInput(float axisValues);
+	void Interact();
 };

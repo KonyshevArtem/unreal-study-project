@@ -8,6 +8,7 @@
 #include "TimelineCurveFloat.h"
 #include "TimelineCurveVector.h"
 #include "TimelineCurveLinearColor.h"
+#include <limits>
 
 MyUtils::MyUtils()
 {
@@ -51,3 +52,21 @@ void MyUtils::LogError(FString message)
 	UE_LOG(LogTemp, Error, TEXT("%s"), *message);
 	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, "[Error] " + message);
 }
+
+template <typename T>
+T MyUtils::Find(TArray<T> arr, TFunction<bool(T, T)> comparator)
+{
+	if (arr.Num() == 0) return nullptr;
+	if (arr.Num() == 1) return arr[0];
+
+	T target = arr[0];
+	for (int i = 1; i < arr.Num(); ++i)
+	{
+		if (comparator(target, arr[i]))
+		{
+			target = arr[i];
+		}
+	}
+	return target;
+}
+

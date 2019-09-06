@@ -29,6 +29,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (BlueprintThreadSafe))
 		float GetHorizontalVelocityMagnitude() const;
+	UFUNCTION(BlueprintCallable)
+		void EndInteract();
+
+	DECLARE_EVENT(UMyAnimInstance, FEndInteractEvent)
+	FEndInteractEvent& OnEndInteract() { return endInteractEvent; }
 
 protected:
 	virtual void NativeBeginPlay() override;
@@ -39,6 +44,8 @@ private:
 		ACharacter* character;
 	UPROPERTY()
 		UAxisMovement* axisMovement;
+
+	FEndInteractEvent endInteractEvent;
 
 	void SetVelocity();
 	void SetLegState();

@@ -14,8 +14,6 @@ AMyCar::AMyCar()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	
 }
 
 void AMyCar::BeginPlay()
@@ -23,6 +21,22 @@ void AMyCar::BeginPlay()
 	Super::BeginPlay();
 
 	movementComponent = GetVehicleMovementComponent();
+	GetComponents<UInteractablePoint>(InteractPoints);
+}
+
+TArray<UInteractablePoint*> AMyCar::GetInteractPoints()
+{
+	return InteractPoints;
+}
+
+void AMyCar::SetMoveToInteract(FMoveToInteract moveToInteract)
+{
+	currentMoveToInteract = moveToInteract;
+}
+
+FMoveToInteract AMyCar::GetMoveToInteract()
+{
+	return currentMoveToInteract;
 }
 
 void AMyCar::SetSteering(float axisValue)
@@ -47,58 +61,72 @@ void AMyCar::DisableHandbrake()
 
 void AMyCar::GetOutOfCar()
 {
-	if (!Driver) return;
+	if (!driver) return;
 
 	if (IsPlayerControlled())
 	{
 		AThirdPersonCamera* camera = Cast<AThirdPersonCamera>(GetWorld()->GetFirstPlayerController()->GetViewTarget());
-		camera->SetTarget(Driver);
+		camera->SetTarget(driver);
 	}
 
 	GetWorld()->GetFirstPlayerController()->UnPossess();
-	GetWorld()->GetFirstPlayerController()->Possess(Driver);
+	GetWorld()->GetFirstPlayerController()->Possess(driver);
 
-	Driver->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	Driver->SetActorLocation(DriverEntryPoint->GetComponentLocation());
-	Driver->SetActorEnableCollision(true);
-	if (UAnimInstance * animInstance = Driver->GetMesh()->GetAnimInstance())
+	driver->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	driver->SetActorLocation(InteractPoints[0]->GetComponentLocation());
+	driver->SetActorEnableCollision(true);
+	if (driverAnimInstance)
 	{
-		UMyAnimInstance* myAnimInstance = Cast<UMyAnimInstance>(animInstance);
-		myAnimInstance->IsDriving = false;
+		driverAnimInstance->IsDriving = false;
 	}
 }
 
-void AMyCar::GetInCar(ACharacter* driver)
+void AMyCar::BeginInteract(ACharacter* character)
 {
-	Driver = driver;
-
-	/*driver->GetController()->UnPossess();
-	GetController()->Possess(this);*/
+	driver = character;
 
 	if (driver->IsPlayerControlled())
 	{
 		AThirdPersonCamera* camera = Cast<AThirdPersonCamera>(GetWorld()->GetFirstPlayerController()->GetViewTarget());
 		camera->SetTarget(this);
 	}
-	
-	GetWorld()->GetFirstPlayerController()->UnPossess();
-	GetWorld()->GetFirstPlayerController()->Possess(this);
 
-	const FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget,
-	                                      EAttachmentRule::KeepWorld, true);
-	driver->AttachToActor(this, rules, FName("DriverSocket"));
+	GetWorld()->GetFirstPlayerController()->UnPossess();
+
 	driver->SetActorEnableCollision(false);
-	if (UAnimInstance* animInstance = driver->GetMesh()->GetAnimInstance())
+	if (UAnimInstance * animInstance = driver->GetMesh()->GetAnimInstance())
 	{
-		UMyAnimInstance* myAnimInstance = Cast<UMyAnimInstance>(animInstance);
-		myAnimInstance->IsDriving = true;
+		driverAnimInstance = Cast<UMyAnimInstance>(animInstance);
+		driverAnimInstance->IsDriving = true;
+		driver->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform, FName("DriverSocket"));
 	}
-	
+	else
+	{
+		driver->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("DriverSocket"));
+		GetWorld()->GetFirstPlayerController()->Possess(this);
+	}
+}
+
+void AMyCar::EndInteract(ACharacter* character)
+{
+	GetWorld()->GetFirstPlayerController()->Possess(this);
 }
 
 void AMyCar::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+	AWheeledVehicle::Tick(DeltaTime);
+	IInteractable::Tick(DeltaTime);
+
+	if (driver && driverAnimInstance)
+	{
+		const float weight = driverAnimInstance->GetCurveValue("DriverSocketWeight");
+		const FVector driverLocation = FMath::Lerp(InteractPoints[0]->GetComponentLocation(),
+			GetMesh()->GetSocketLocation("DriverSocket"), weight);
+		const FRotator driverRotation = FMath::Lerp(InteractPoints[0]->GetComponentRotation(),
+			GetMesh()->GetSocketRotation("DriverSocket"), weight);
+		driver->SetActorLocation(driverLocation);
+		driver->SetActorRotation(driverRotation);
+	}
 }
 
 void AMyCar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

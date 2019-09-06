@@ -6,16 +6,19 @@
 #include "WheeledVehicle.h"
 #include "WheeledVehicleMovementComponent.h"
 #include "GameFramework/Character.h"
+#include "MyAnimInstance.h"
+#include "Interactable.h"
+#include "InteractablePoint.h"
 #include "MyCar.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
-class UNREALTESTPROJECT_API AMyCar : public AWheeledVehicle
+class UNREALTESTPROJECT_API AMyCar : public AWheeledVehicle, public IInteractable
 {
 	GENERATED_BODY()
-	
+
 public:
 	// Sets default values for this character's properties
 	AMyCar();
@@ -24,29 +27,32 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void BeginInteract(ACharacter* character) override;
+	virtual void EndInteract(ACharacter* character) override;
+	virtual TArray<UInteractablePoint*> GetInteractPoints() override;
+	virtual void SetMoveToInteract(FMoveToInteract moveToInteract) override;
+	virtual FMoveToInteract GetMoveToInteract() override;
+
 private:
 	UPROPERTY()
+		ACharacter* driver;
+	UPROPERTY()
 		UWheeledVehicleMovementComponent* movementComponent;
-	
+	UPROPERTY()
+		UMyAnimInstance* driverAnimInstance;
+	UPROPERTY()
+		FMoveToInteract currentMoveToInteract;
+
 	void SetSteering(float axisValue);
 	void SetThrottle(float axisValue);
 	void EnableHandbrake();
 	void DisableHandbrake();
 	void GetOutOfCar();
-	
+
 public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Car properties")
-		ACharacter* Driver;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Car properties")
-		USceneComponent* DriverEntryPoint;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Car properties")
-		USceneComponent* PassengerEntryPoint;
+		TArray<UInteractablePoint*> InteractPoints;
 
-	void GetInCar(ACharacter* driver);
-	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 };

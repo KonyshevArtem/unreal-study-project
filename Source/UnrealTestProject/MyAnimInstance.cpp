@@ -11,6 +11,11 @@ float UMyAnimInstance::GetHorizontalVelocityMagnitude() const
 	return velocity.Size();
 }
 
+void UMyAnimInstance::EndInteract()
+{
+	endInteractEvent.Broadcast();
+}
+
 void UMyAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();

@@ -17,4 +17,7 @@ public:
 
 	static UTimelineComponent* CreateTimeline(AActor* owner, FName name, TArray<UTimelineCurveBase*> curves);
 	static void LogError(FString message);
+
+	template<typename T>
+	T Find(TArray<T> arr, TFunction<bool(T, T)> comparator);
 };
