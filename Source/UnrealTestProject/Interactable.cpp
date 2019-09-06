@@ -16,7 +16,7 @@ void IInteractable::Tick(float DeltaTime)
 	{
 		UAIBlueprintHelperLibrary::SimpleMoveToLocation(moveToInteract.character->GetController(),
 			moveToInteract.interactPoint->GetComponentLocation());
-		if (HasReachedInteractPoint(moveToInteract.character, moveToInteract.interactPoint))
+		if (moveToInteract.HasReachedInteractPoint())
 		{
 			BeginInteract(moveToInteract.character);
 			SetMoveToInteract(FMoveToInteract(nullptr, nullptr));
@@ -67,10 +67,4 @@ float IInteractable::GetDistanceToInteractPoint(ACharacter* character, UInteract
 	UNavigationPath* path = UNavigationSystemV1::FindPathToLocationSynchronously(
 		character, character->GetActorLocation(), interactPoint->GetComponentLocation());
 	return path->GetPathLength();
-}
-
-bool IInteractable::HasReachedInteractPoint(ACharacter* character, UInteractablePoint* interactPoint) const
-{
-	const float distanceToCar = FVector::Distance(character->GetActorLocation(), interactPoint->GetComponentLocation());
-	return distanceToCar < 100;
 }

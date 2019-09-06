@@ -26,6 +26,12 @@ public:
 		ACharacter* character;
 	UPROPERTY()
 		UInteractablePoint* interactPoint;
+
+	bool HasReachedInteractPoint() const
+	{
+		const float distanceToPoint = FVector::Distance(character->GetActorLocation(), interactPoint->GetComponentLocation());
+		return distanceToPoint < 100;
+	}
 };
 
 // This class does not need to be modified.
@@ -57,5 +63,4 @@ public:
 private:
 	UInteractablePoint* GetClosestInteractPoint(ACharacter* character, TArray<UInteractablePoint*> interactPoints);
 	float GetDistanceToInteractPoint(ACharacter* character, UInteractablePoint* interactPoint);
-	bool HasReachedInteractPoint(ACharacter* character, UInteractablePoint* interactPoint) const;
 };

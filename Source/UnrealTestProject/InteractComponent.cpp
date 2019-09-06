@@ -39,7 +39,6 @@ void UInteractComponent::BeginPlay()
 
 void UInteractComponent::EndInteract() const
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::White, "test");
 	if (targetInteractable.GetObject())
 	{
 		targetInteractable->EndInteract(ownerCharacter);
