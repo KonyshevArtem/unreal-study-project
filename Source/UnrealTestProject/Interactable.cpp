@@ -6,21 +6,20 @@
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
 #include "GameFramework/Character.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
-#include "Runtime\Engine\Classes\Components\SkeletalMeshComponent.h"
+#include "ActiveInteraction.h"
 
 void IInteractable::Tick(float DeltaTime)
 {
-	const FMoveToInteract moveToInteract = GetMoveToInteract();
-	if (moveToInteract.character && moveToInteract.interactPoint)
+	ActiveInteraction* activeInteraction = GetActiveInteraction();
+	if (!activeInteraction) return;
+	
+	if (!activeInteraction->IsInteracting)
 	{
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(moveToInteract.character->GetController(),
-			moveToInteract.interactPoint->GetComponentLocation());
-		if (moveToInteract.HasReachedInteractPoint())
-		{
-			BeginInteract(moveToInteract.character);
-			SetMoveToInteract(FMoveToInteract(nullptr, nullptr));
-		}
+		activeInteraction->MoveToInteract();
+	}
+	else
+	{
+		InteractionTick(activeInteraction);
 	}
 }
 
@@ -30,16 +29,24 @@ void IInteractable::Interact(ACharacter* character)
 	UInteractablePoint* closestInteractPoint = GetClosestInteractPoint(character, GetInteractPoints());
 	if (closestInteractPoint)
 	{
-		SetMoveToInteract(FMoveToInteract(character, closestInteractPoint));
+		SetActiveInteraction(new ActiveInteraction(character, closestInteractPoint, [this](ACharacter* character)
+			{
+				BeginInteract(character);
+			}));
 	}
+}
+
+void IInteractable::EndInteract(ACharacter* character)
+{
+	SetActiveInteraction(nullptr);
 }
 
 void IInteractable::StopMoveToInteract(ACharacter* character)
 {
-	const FMoveToInteract moveToInteract = GetMoveToInteract();
-	if (moveToInteract.character == character)
+	ActiveInteraction* activeInteraction = GetActiveInteraction();
+	if (activeInteraction && activeInteraction->Character == character)
 	{
-		SetMoveToInteract(FMoveToInteract(nullptr, nullptr));
+		SetActiveInteraction(nullptr);
 	}
 }
 

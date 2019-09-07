@@ -5,7 +5,6 @@
 #include "Engine/Engine.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
-#include "Runtime/AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 #include "MyUtils.h"
 #include "GameFramework/Controller.h"
 

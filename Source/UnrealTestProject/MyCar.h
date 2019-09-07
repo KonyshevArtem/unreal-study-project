@@ -30,19 +30,22 @@ protected:
 	virtual void BeginInteract(ACharacter* character) override;
 	virtual void EndInteract(ACharacter* character) override;
 	virtual TArray<UInteractablePoint*> GetInteractPoints() override;
-	virtual void SetMoveToInteract(FMoveToInteract moveToInteract) override;
-	virtual FMoveToInteract GetMoveToInteract() override;
+	virtual void SetActiveInteraction(ActiveInteraction* activeInteraction) override;
+	virtual ActiveInteraction* GetActiveInteraction() override;
+	virtual void InteractionTick(ActiveInteraction* activeInteraction) override;
 
 private:
 	UPROPERTY()
 		ACharacter* driver;
 	UPROPERTY()
-		UWheeledVehicleMovementComponent* movementComponent;
-	UPROPERTY()
 		UMyAnimInstance* driverAnimInstance;
 	UPROPERTY()
-		FMoveToInteract currentMoveToInteract;
-
+		UWheeledVehicleMovementComponent* movementComponent;
+	UPROPERTY()
+		TArray<UInteractablePoint*> interactPoints;
+	
+	TSharedPtr<ActiveInteraction> currentActiveInteraction;
+	
 	void SetSteering(float axisValue);
 	void SetThrottle(float axisValue);
 	void EnableHandbrake();
@@ -50,9 +53,6 @@ private:
 	void GetOutOfCar();
 
 public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Car properties")
-		TArray<UInteractablePoint*> InteractPoints;
-
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 };
