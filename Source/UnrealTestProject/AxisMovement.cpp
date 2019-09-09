@@ -11,6 +11,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
 #include "AIController.h"
+#include "UnrealTestProject.h"
 
 // Sets default values for this component's properties
 UAxisMovement::UAxisMovement()
@@ -29,12 +30,13 @@ void UAxisMovement::BeginPlay()
 	UActorComponent::BeginPlay();
 
 	ownerCharacter = Cast<ACharacter>(GetOwner());
+	ownerCharacter->MovementModeChangedDelegate.AddDynamic(this, &UAxisMovement::OnMovementModeChanged);
 	USkeletalMeshComponent* mesh = ownerCharacter->GetMesh();
 	if (mesh)
 	{
 		animInstance = mesh->GetAnimInstance();
 	}
-	
+
 	movementComponent = ownerCharacter->GetCharacterMovement();
 	if (!movementComponent)
 	{
@@ -80,7 +82,7 @@ void UAxisMovement::SetMainCamera()
 FVector UAxisMovement::GetMoveInput() const
 {
 	if (!mainCamera) return FVector::ZeroVector;
-	
+
 	const FVector cameraForward = mainCamera->GetActorForwardVector();
 	const FVector cameraRight = mainCamera->GetActorRightVector();
 	FVector moveInput = cameraForward * vertical + cameraRight * horizontal;
@@ -124,10 +126,20 @@ void UAxisMovement::Jump()
 
 	const FVector moveInput = GetMoveInput();
 	movementComponent->StopActiveMovement();
-	if (animInstance)
+	ownerCharacter->Jump();
+	movementComponent->Velocity = moveInput * JumpSpeed;
+}
+
+void UAxisMovement::OnMovementModeChanged(ACharacter* character, EMovementMode prevMovementMode, uint8 prevCustomMode)
+{
+	if (!animInstance) return;
+	
+	if (movementComponent->MovementMode == MOVE_Walking)
+	{
+		animInstance->SetRootMotionMode(ERootMotionMode::RootMotionFromEverything);
+	}
+	else if (movementComponent->MovementMode == MOVE_Falling)
 	{
 		animInstance->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
 	}
-	ownerCharacter->Jump();
-	movementComponent->Velocity = moveInput * JumpSpeed;
 }

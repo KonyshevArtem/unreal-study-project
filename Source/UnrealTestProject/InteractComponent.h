@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "RequireInput.h"
 #include "MyCar.h"
+#include "ActiveInteraction.h"
 #include "InteractComponent.generated.h"
 
 
@@ -24,7 +25,7 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Interact component methods")
-		void EndInteract() const;
+		void EndInteract();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interact component methods")
 		void InitializeInput(UInputComponent* inputComponent);
@@ -41,6 +42,8 @@ private:
 		TScriptInterface<IInteractable> triggeredInteractable = TScriptInterface<IInteractable>();
 	UPROPERTY()
 		TScriptInterface<IInteractable> targetInteractable = TScriptInterface<IInteractable>();
+	
+	ActiveInteraction* activeInteraction;
 
 	UFUNCTION()
 		void ActorBeginOverlap(AActor* thisActor, AActor* otherActor);

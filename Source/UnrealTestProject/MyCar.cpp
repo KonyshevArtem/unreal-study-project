@@ -23,6 +23,7 @@ void AMyCar::BeginPlay()
 
 	movementComponent = GetVehicleMovementComponent();
 	GetComponents<UInteractablePoint>(interactPoints);
+	carAnimInstance = GetMesh()->GetAnimInstance();
 }
 
 TArray<UInteractablePoint*> AMyCar::GetInteractPoints()
@@ -43,14 +44,17 @@ ActiveInteraction* AMyCar::GetActiveInteraction()
 void AMyCar::InteractionTick(ActiveInteraction* activeInteraction)
 {
 	if (!activeInteraction->CharacterAnimInstance) return;
-	
+
 	const float weight = activeInteraction->CharacterAnimInstance->GetCurveValue("DriverSocketWeight");
-	const FVector driverLocation = FMath::Lerp(activeInteraction->InteractPoint->GetComponentLocation(),
-		GetMesh()->GetSocketLocation("DriverSocket"), weight);
-	const FRotator driverRotation = FMath::Lerp(activeInteraction->InteractPoint->GetComponentRotation(),
-		GetMesh()->GetSocketRotation("DriverSocket"), weight);
-	driver->SetActorLocation(driverLocation);
-	driver->SetActorRotation(driverRotation);
+	if (weight > 0)
+	{
+		const FVector driverLocation = FMath::Lerp(activeInteraction->InteractPoint->GetComponentLocation(),
+			GetMesh()->GetSocketLocation("DriverSocket"), weight);
+		const FRotator driverRotation = FMath::Lerp(activeInteraction->InteractPoint->GetComponentRotation(),
+			GetMesh()->GetSocketRotation("DriverSocket"), weight);
+		activeInteraction->Character->SetActorLocation(driverLocation);
+		activeInteraction->Character->SetActorRotation(driverRotation);
+	}
 }
 
 void AMyCar::SetSteering(float axisValue)
@@ -95,9 +99,9 @@ void AMyCar::GetOutOfCar()
 	}
 }
 
-void AMyCar::BeginInteract(ACharacter* character)
+void AMyCar::BeginInteract(ActiveInteraction* activeInteraction)
 {
-	driver = character;
+	driver = activeInteraction->Character;
 
 	if (driver->IsPlayerControlled())
 	{
@@ -107,25 +111,44 @@ void AMyCar::BeginInteract(ACharacter* character)
 
 	GetWorld()->GetFirstPlayerController()->UnPossess();
 
+	if (carAnimInstance && activeInteraction->InteractPoint->InteractableItemMontage)
+	{
+		carAnimInstance->Montage_Play(activeInteraction->InteractPoint->InteractableItemMontage);
+	}
+
 	driver->SetActorEnableCollision(false);
 	if (UAnimInstance * animInstance = driver->GetMesh()->GetAnimInstance())
 	{
 		driverAnimInstance = Cast<UMyAnimInstance>(animInstance);
-		driverAnimInstance->IsDriving = true;
-		driver->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform, FName("DriverSocket"));
+		if (activeInteraction->InteractPoint->CharacterInteractMontage)
+		{
+			driver->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform, FName("DriverSocket"));
+			Cast<UCharacterMovementComponent>(driver->GetMovementComponent())->SetMovementMode(MOVE_Flying);
+			driver->PlayAnimMontage(activeInteraction->InteractPoint->CharacterInteractMontage);
+		}
+		else
+		{
+			driver->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("DriverSocket"));
+			EndInteract(activeInteraction);
+		}
 	}
 	else
 	{
 		driver->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("DriverSocket"));
-		GetWorld()->GetFirstPlayerController()->Possess(this);
+		EndInteract(activeInteraction);
 	}
 }
 
-void AMyCar::EndInteract(ACharacter* character)
+void AMyCar::EndInteract(ActiveInteraction* activeInteraction)
 {
-	IInteractable::EndInteract(character);
-	
+	IInteractable::EndInteract(activeInteraction);
+
 	GetWorld()->GetFirstPlayerController()->Possess(this);
+	if (activeInteraction->CharacterAnimInstance)
+	{
+		Cast<UCharacterMovementComponent>(activeInteraction->Character->GetMovementComponent())->SetMovementMode(MOVE_Walking);
+		activeInteraction->CharacterAnimInstance->IsDriving = true;
+	}
 }
 
 void AMyCar::Tick(float DeltaTime)

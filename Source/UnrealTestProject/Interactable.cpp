@@ -12,10 +12,10 @@ void IInteractable::Tick(float DeltaTime)
 {
 	ActiveInteraction* activeInteraction = GetActiveInteraction();
 	if (!activeInteraction) return;
-	
+
 	if (!activeInteraction->IsInteracting)
 	{
-		activeInteraction->MoveToInteract();
+		activeInteraction->MoveToInteract(DeltaTime, GetWarpSpeed());
 	}
 	else
 	{
@@ -24,19 +24,23 @@ void IInteractable::Tick(float DeltaTime)
 }
 
 // Add default functionality here for any IInteractable functions that are not pure virtual.
-void IInteractable::Interact(ACharacter* character)
+ActiveInteraction* IInteractable::Interact(ACharacter* character)
 {
 	UInteractablePoint* closestInteractPoint = GetClosestInteractPoint(character, GetInteractPoints());
 	if (closestInteractPoint)
 	{
-		SetActiveInteraction(new ActiveInteraction(character, closestInteractPoint, [this](ACharacter* character)
+		ActiveInteraction* activeInteraction = new ActiveInteraction(character, closestInteractPoint,
+			[this](ActiveInteraction* activeInteraction)
 			{
-				BeginInteract(character);
-			}));
+				BeginInteract(activeInteraction);
+			});
+		SetActiveInteraction(activeInteraction);
+		return activeInteraction;
 	}
+	return nullptr;
 }
 
-void IInteractable::EndInteract(ACharacter* character)
+void IInteractable::EndInteract(ActiveInteraction* activeInteraction)
 {
 	SetActiveInteraction(nullptr);
 }

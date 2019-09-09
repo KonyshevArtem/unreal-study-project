@@ -27,14 +27,15 @@ protected:
 	virtual TArray<UInteractablePoint*> GetInteractPoints() = 0;
 	virtual void SetActiveInteraction(ActiveInteraction* activeInteraction) = 0;
 	virtual ActiveInteraction* GetActiveInteraction() = 0;
-	virtual void BeginInteract(ACharacter* character) = 0;
+	virtual void BeginInteract(ActiveInteraction* activeInteraction) = 0;
 	virtual void InteractionTick(ActiveInteraction* activeInteraction) = 0;
-
+	virtual float GetWarpSpeed() = 0;
+	
 	virtual void Tick(float DeltaTime);
 
 public:
-	void Interact(ACharacter* character);
-	virtual void EndInteract(ACharacter* character);
+	ActiveInteraction* Interact(ACharacter* character);
+	virtual void EndInteract(ActiveInteraction* activeInteraction);
 	void StopMoveToInteract(ACharacter* character);
 
 private:

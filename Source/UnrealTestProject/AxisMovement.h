@@ -31,13 +31,13 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Axis movement methods")
 		void InitializeInput(UInputComponent* inputComponent);
 	virtual void InitializeInput_Implementation(UInputComponent* inputComponent) override;
-	
+
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
 	float vertical, horizontal;
-	
+
 	UPROPERTY()
 		ACharacter* ownerCharacter;
 	UPROPERTY()
@@ -54,4 +54,7 @@ private:
 	void SetVertical(float axisValue) { vertical = axisValue; }
 	void SetHorizontal(float axisValue) { horizontal = axisValue; }
 	void Jump();
+
+	UFUNCTION()
+		void OnMovementModeChanged(ACharacter* character, EMovementMode movementMode, uint8 prevCustomMode);
 };

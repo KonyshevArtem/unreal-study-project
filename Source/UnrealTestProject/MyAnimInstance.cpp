@@ -50,5 +50,4 @@ void UMyAnimInstance::SetLegState()
 void UMyAnimInstance::SetIsFalling()
 {	
 	IsFalling = character->GetMovementComponent()->IsFalling();
-	RootMotionMode = IsFalling ? ERootMotionMode::IgnoreRootMotion : ERootMotionMode::RootMotionFromEverything;
 }

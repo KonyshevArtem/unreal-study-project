@@ -12,19 +12,22 @@
 class UNREALTESTPROJECT_API ActiveInteraction
 {
 public:
-	ActiveInteraction(ACharacter* character, UInteractablePoint* interactPoint, TFunction<void(ACharacter*)> onReachInteractPoint);
+	ActiveInteraction(ACharacter* character, UInteractablePoint* interactPoint, TFunction<void(ActiveInteraction*)> onReachInteractPoint);
 	virtual ~ActiveInteraction() = default;
 
 private:
-	TFunction<void(ACharacter*)> onReachInteractPoint;
-
+	TFunction<void(ActiveInteraction*)> onReachInteractPoint;
+	bool isWarping = false;
+	float totalWarpTime, currentWarpTime;
+	
 	bool HasReachedInteractPoint() const;
-
+	void Warp(float deltaTime, float warpSpeed);
+	
 public:
 	ACharacter* Character;
 	UInteractablePoint* InteractPoint;
 	UMyAnimInstance* CharacterAnimInstance;
-	bool IsInteracting;
+	bool IsInteracting = false;
 
-	void MoveToInteract();
+	void MoveToInteract(float deltaTime, float warpSpeed);
 };

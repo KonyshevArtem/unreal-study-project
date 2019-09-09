@@ -36,11 +36,12 @@ void UInteractComponent::BeginPlay()
 	ownerCharacter->OnActorEndOverlap.AddDynamic(this, &UInteractComponent::ActorEndOverlap);
 }
 
-void UInteractComponent::EndInteract() const
+void UInteractComponent::EndInteract()
 {
-	if (targetInteractable.GetObject())
+	if (targetInteractable.GetObject() && activeInteraction)
 	{
-		targetInteractable->EndInteract(ownerCharacter);
+		targetInteractable->EndInteract(activeInteraction);
+		activeInteraction = nullptr;
 	}
 }
 
@@ -87,6 +88,7 @@ void UInteractComponent::StopInteracting()
 		targetInteractable->StopMoveToInteract(ownerCharacter);
 		targetInteractable.SetObject(nullptr);
 		ownerCharacter->GetMovementComponent()->StopActiveMovement();
+		activeInteraction = nullptr;
 	}
 }
 
@@ -104,5 +106,5 @@ void UInteractComponent::Interact()
 
 	targetInteractable.SetInterface(triggeredInteractable.GetInterface());
 	targetInteractable.SetObject(triggeredInteractable.GetObject());
-	triggeredInteractable->Interact(ownerCharacter);
+	activeInteraction = triggeredInteractable->Interact(ownerCharacter);
 }

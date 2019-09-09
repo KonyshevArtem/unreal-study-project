@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "Animation/AnimMontage.h"
 #include "InteractablePoint.generated.h"
 
 
@@ -24,5 +25,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+	UPROPERTY(EditAnywhere, Category = "Interactable point properties")
+		UAnimMontage* InteractableItemMontage;
+	UPROPERTY(EditAnywhere, Category = "Interactable point properties")
+		UAnimMontage* CharacterInteractMontage;
 };
