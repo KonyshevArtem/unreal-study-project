@@ -42,19 +42,7 @@ ActiveInteraction* AMyCar::GetActiveInteraction()
 }
 
 void AMyCar::InteractionTick(ActiveInteraction* activeInteraction)
-{
-	if (!activeInteraction->CharacterAnimInstance) return;
-
-	const float weight = activeInteraction->CharacterAnimInstance->GetCurveValue("DriverSocketWeight");
-	if (weight > 0)
-	{
-		const FVector driverLocation = FMath::Lerp(activeInteraction->InteractPoint->GetComponentLocation(),
-			GetMesh()->GetSocketLocation("DriverSocket"), weight);
-		const FRotator driverRotation = FMath::Lerp(activeInteraction->InteractPoint->GetComponentRotation(),
-			GetMesh()->GetSocketRotation("DriverSocket"), weight);
-		activeInteraction->Character->SetActorLocation(driverLocation);
-		activeInteraction->Character->SetActorRotation(driverRotation);
-	}
+{	
 }
 
 void AMyCar::SetSteering(float axisValue)
@@ -96,7 +84,9 @@ void AMyCar::GetOutOfCar()
 	if (driverAnimInstance)
 	{
 		driverAnimInstance->IsDriving = false;
+		driverAnimInstance = nullptr;
 	}
+	driver = nullptr;
 }
 
 void AMyCar::BeginInteract(ActiveInteraction* activeInteraction)
@@ -155,6 +145,13 @@ void AMyCar::Tick(float DeltaTime)
 {
 	AWheeledVehicle::Tick(DeltaTime);
 	IInteractable::Tick(DeltaTime);
+
+	if (!driver) return;
+	if (driver->GetCurrentMontage() != nullptr) return;
+	driver->SetActorLocation(FMath::VInterpConstantTo(driver->GetActorLocation(),
+	                                                  GetMesh()->GetSocketLocation("DriverSocket"), DeltaTime, 100));
+	driver->SetActorRotation(FMath::RInterpConstantTo(driver->GetActorRotation(),
+	                                                  GetMesh()->GetSocketRotation("DriverSocket"), DeltaTime, 100));
 }
 
 void AMyCar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
