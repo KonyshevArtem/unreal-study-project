@@ -101,7 +101,7 @@ void UAxisMovement::AddMoveInput()
 	ownerCharacter->AddMovementInput(moveInput);
 }
 
-void UAxisMovement::RotateActorToVelocity(float DeltaTime) const
+void UAxisMovement::RotateActorToVelocity(float DeltaTime)
 {
 	if (!mainCamera || !movementComponent) return;
 
@@ -110,11 +110,16 @@ void UAxisMovement::RotateActorToVelocity(float DeltaTime) const
 	{
 		const FRotator newRotation = FMath::Lerp(ownerCharacter->GetActorRotation(), moveInput.Rotation(), DeltaTime * 10);
 		ownerCharacter->SetActorRotation(newRotation);
+		lastGroundedMoveInput = moveInput;
 	}
 	else if (movementComponent->IsFalling())
 	{
 		FVector velocity = movementComponent->Velocity;
 		velocity.Z = 0;
+		if (velocity.Size() < 0.1)
+		{
+			velocity = lastGroundedMoveInput;
+		}
 		const FRotator newRotation = FMath::Lerp(ownerCharacter->GetActorRotation(), velocity.Rotation(), DeltaTime * 10);
 		ownerCharacter->SetActorRotation(newRotation);
 	}
@@ -133,7 +138,7 @@ void UAxisMovement::Jump()
 void UAxisMovement::OnMovementModeChanged(ACharacter* character, EMovementMode prevMovementMode, uint8 prevCustomMode)
 {
 	if (!animInstance) return;
-	
+
 	if (movementComponent->MovementMode == MOVE_Walking)
 	{
 		animInstance->SetRootMotionMode(ERootMotionMode::RootMotionFromEverything);

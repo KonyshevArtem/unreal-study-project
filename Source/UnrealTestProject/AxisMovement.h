@@ -46,11 +46,13 @@ private:
 		ACameraActor* mainCamera;
 	UPROPERTY()
 		UAnimInstance* animInstance;
+	UPROPERTY()
+		FVector lastGroundedMoveInput;
 
 	void SetMainCamera();
 	FVector GetMoveInput() const;
 	void AddMoveInput();
-	void RotateActorToVelocity(float DeltaTime) const;
+	void RotateActorToVelocity(float DeltaTime);
 	void SetVertical(float axisValue) { vertical = axisValue; }
 	void SetHorizontal(float axisValue) { horizontal = axisValue; }
 	void Jump();
